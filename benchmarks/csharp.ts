@@ -33,4 +33,4 @@ for (let iteration = 0; iteration < iterations; iteration++) {
 const seconds = (performance.now() - start) / 1_000
 const megabytes = (source.length * iterations) / 1_000_000
 
-console.log(`${(megabytes / seconds).toFixed(1)} MB/s (${seconds.toFixed(2)}s)`)
+console.log(`${(megabytes / seconds).toFixed(1)} MiB/s (${seconds.toFixed(2)}s)`)
