@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Aura, csharp } from "../src/main";
-import type { LanguageLexer, TokenScope } from "../src/main";
+import type { TokenScope } from "../src/main";
 
 interface Segment {
   text: string;
