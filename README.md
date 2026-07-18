@@ -20,5 +20,3 @@ const lexer = aura.createLexer("cs");
 lexer.write(chunk, (text, scope) => renderToken(text, scope));
 lexer.finish((text, scope) => renderToken(text, scope));
 ```
-
-HTML class names use the `aura-*` prefix.
