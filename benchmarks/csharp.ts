@@ -13,7 +13,7 @@ public sealed class MessageService
 `
 
 const source = sample.repeat(2_000)
-const aura = new Aura().register(csharp)
+const aura = new Aura().register([csharp])
 const iterations = 20
 
 for (let warmup = 0; warmup < 5; warmup++) {

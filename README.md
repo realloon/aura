@@ -5,7 +5,7 @@ A syntax-highlighting library for streaming output.
 ```ts
 import { Aura, csharp } from "aura";
 
-const aura = new Aura().register(csharp);
+const aura = new Aura().register([csharp]);
 const stream = aura.createHighlighter("csharp");
 
 html += stream.write("public sealed cla");

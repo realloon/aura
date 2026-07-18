@@ -7,23 +7,28 @@ import type {
 export class Aura {
   readonly #languages = new Map<string, LanguagePlugin>()
 
-  register(plugin: LanguagePlugin): this {
-    const names = [plugin.name, ...(plugin.aliases ?? [])].map(normalizeName)
-    const uniqueNames = new Set(names)
+  register(plugins: readonly LanguagePlugin[]): this {
+    const pending = new Map<string, LanguagePlugin>()
 
-    if (uniqueNames.size !== names.length) {
-      throw new Error(
-        `Language plugin "${plugin.name}" contains duplicate names`,
-      )
-    }
+    for (const plugin of plugins) {
+      const names = [plugin.name, ...(plugin.aliases ?? [])].map(normalizeName)
+      const uniqueNames = new Set(names)
 
-    for (const name of uniqueNames) {
-      if (this.#languages.has(name)) {
-        throw new Error(`Language name "${name}" is already registered`)
+      if (uniqueNames.size !== names.length) {
+        throw new Error(
+          `Language plugin "${plugin.name}" contains duplicate names`,
+        )
+      }
+
+      for (const name of uniqueNames) {
+        if (this.#languages.has(name) || pending.has(name)) {
+          throw new Error(`Language name "${name}" is already registered`)
+        }
+        pending.set(name, plugin)
       }
     }
 
-    for (const name of uniqueNames) {
+    for (const [name, plugin] of pending) {
       this.#languages.set(name, plugin)
     }
 
