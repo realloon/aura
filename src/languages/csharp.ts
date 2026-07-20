@@ -108,7 +108,7 @@ class CSharpLexer implements LanguageLexer {
     }
   }
 
-  finish(emit: TokenSink) {
+  end(emit: TokenSink) {
     if (this.#carry.length > 0) {
       const carry = this.#carry
       this.#carry = ''

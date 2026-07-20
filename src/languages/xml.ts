@@ -80,7 +80,7 @@ class XmlLexer implements LanguageLexer {
     }
   }
 
-  finish(emit: TokenSink) {
+  end(emit: TokenSink) {
     if (this.#carry.length > 0) {
       emit(this.#carry, this.#carry.startsWith('<!') ? 'meta' : 'punctuation')
       this.#carry = ''

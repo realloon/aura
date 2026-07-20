@@ -27,10 +27,12 @@ for (let iteration = 0; iteration < iterations; iteration++) {
   for (let offset = 0; offset < source.length; offset += 32) {
     stream.write(source.slice(offset, offset + 32))
   }
-  stream.finish()
+  stream.end()
 }
 
 const seconds = (performance.now() - start) / 1_000
 const megabytes = (source.length * iterations) / 1_000_000
 
-console.log(`${(megabytes / seconds).toFixed(1)} MiB/s (${seconds.toFixed(2)}s)`)
+console.log(
+  `${(megabytes / seconds).toFixed(1)} MiB/s (${seconds.toFixed(2)}s)`,
+)

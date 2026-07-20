@@ -56,33 +56,33 @@ export class Aura {
 
   highlight(code: string, language: string) {
     const highlighter = this.createHighlighter(language)
-    return highlighter.write(code) + highlighter.finish()
+    return highlighter.write(code) + highlighter.end()
   }
 }
 
 export class StreamingHighlighter {
   readonly #lexer: LanguageLexer
-  #finished = false
+  #ended = false
 
   constructor(lexer: LanguageLexer) {
     this.#lexer = lexer
   }
 
   write(chunk: string) {
-    if (this.#finished) {
-      throw new Error('Cannot write after the highlighter has finished')
+    if (this.#ended) {
+      throw new Error('Cannot write after the highlighter has ended')
     }
 
     return this.#render(emit => this.#lexer.write(chunk, emit))
   }
 
-  finish() {
-    if (this.#finished) {
-      throw new Error('The highlighter has already finished')
+  end() {
+    if (this.#ended) {
+      throw new Error('The highlighter has already ended')
     }
 
-    this.#finished = true
-    return this.#render(emit => this.#lexer.finish(emit))
+    this.#ended = true
+    return this.#render(emit => this.#lexer.end(emit))
   }
 
   #render(

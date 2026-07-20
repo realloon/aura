@@ -18,7 +18,7 @@ const stream = aura.createHighlighter('csharp')
 
 html += stream.write('public sealed cla')
 html += stream.write('ss Example {}')
-html += stream.finish()
+html += stream.end()
 ```
 
 If the UI does not need HTML, use the language lexer directly to avoid token objects and HTML strings:
@@ -26,7 +26,7 @@ If the UI does not need HTML, use the language lexer directly to avoid token obj
 ```ts
 const lexer = aura.createLexer('cs')
 lexer.write(chunk, (text, scope) => renderToken(text, scope))
-lexer.finish((text, scope) => renderToken(text, scope))
+lexer.end((text, scope) => renderToken(text, scope))
 ```
 
 ## Use with Markflow
