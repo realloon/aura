@@ -1,6 +1,7 @@
 {
   "name": "@realloon/aura",
   "description": "A syntax-highlighting library for streaming output.",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
