@@ -1,4 +1,5 @@
 export type TokenScope =
+  | 'attribute'
   | 'comment'
   | 'keyword'
   | 'literal'
@@ -7,6 +8,7 @@ export type TokenScope =
   | 'operator'
   | 'punctuation'
   | 'string'
+  | 'tag'
   | 'type'
   | (string & {})
 

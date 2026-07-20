@@ -4,6 +4,15 @@ import type {
   TokenScope,
   TokenSink,
 } from '../types/index.js'
+import {
+  createAsciiTable,
+  createWordSet,
+  isAsciiDigit,
+  isIdentifierPart,
+  isIdentifierStart,
+  isWhitespace,
+  scanWhitespace,
+} from '../shared/lexer.js'
 
 const enum Mode {
   Normal,
@@ -18,7 +27,7 @@ const enum Mode {
   Preprocessor,
 }
 
-const KEYWORDS = wordSet(`
+const KEYWORDS = createWordSet(`
   abstract as async await base break case catch checked class const continue
   default delegate do else enum event explicit extern file finally fixed for
   foreach from get global goto if implicit in init interface internal into is
@@ -27,13 +36,13 @@ const KEYWORDS = wordSet(`
   scoped sealed select set sizeof stackalloc static struct switch this throw try
   typeof unchecked unsafe using value virtual volatile when where while with yield
 `)
-const TYPES = wordSet(`
+const TYPES = createWordSet(`
   bool byte char decimal double dynamic float int long nint nuint object sbyte
   short string uint ulong ushort void
 `)
-const LITERALS = wordSet('false null true')
-const PUNCTUATION = asciiTable('(),:;[]{}')
-const OPERATORS = asciiTable('!#$%&*+-./<=>?^|~')
+const LITERALS = createWordSet('false null true')
+const PUNCTUATION = createAsciiTable('(),:;[]{}')
+const OPERATORS = createAsciiTable('!#$%&*+-./<=>?^|~')
 const MAX_SPECIAL_WORD_LENGTH = Math.max(
   ...[...KEYWORDS, ...TYPES, ...LITERALS].map(word => word.length),
 )
@@ -120,15 +129,14 @@ class CSharpLexer implements LanguageLexer {
       return this.#scanWord(input, index, emit)
     }
 
-    if (isDigit(code)) {
+    if (isAsciiDigit(code)) {
       this.#mode = Mode.Number
       this.#numberAllowsSign = false
       return this.#scanNumber(input, index, emit)
     }
 
     if (isWhitespace(code)) {
-      let end = index + 1
-      while (end < input.length && isWhitespace(input.charCodeAt(end))) end++
+      const end = scanWhitespace(input, index)
       const text = input.slice(index, end)
       this.#noteWhitespace(text)
       emit(text)
@@ -163,7 +171,7 @@ class CSharpLexer implements LanguageLexer {
           this.#carry = '.'
           return input.length
         }
-        if (isDigit(input.charCodeAt(index + 1))) {
+        if (isAsciiDigit(input.charCodeAt(index + 1))) {
           this.#mode = Mode.Number
           this.#numberAllowsSign = false
           return this.#scanNumber(input, index, emit)
@@ -585,31 +593,10 @@ function wordScope(word: string): TokenScope | undefined {
   return undefined
 }
 
-function isIdentifierStart(code: number) {
-  return (
-    code === 95 ||
-    (code >= 65 && code <= 90) ||
-    (code >= 97 && code <= 122) ||
-    code > 127
-  )
-}
-
-function isIdentifierPart(code: number) {
-  return isIdentifierStart(code) || isDigit(code)
-}
-
-function isDigit(code: number) {
-  return code >= 48 && code <= 57
-}
-
-function isWhitespace(code: number) {
-  return code === 9 || code === 10 || code === 13 || code === 32
-}
-
 function isNumberPart(code: number) {
   const lower = code | 32
   return (
-    isDigit(code) ||
+    isAsciiDigit(code) ||
     code === 46 ||
     code === 95 ||
     (lower >= 97 && lower <= 102) ||
@@ -626,16 +613,4 @@ function isPunctuation(code: number) {
 
 function isOperator(code: number) {
   return OPERATORS[code] === 1
-}
-
-function wordSet(words: string) {
-  return new Set(words.trim().split(/\s+/))
-}
-
-function asciiTable(characters: string) {
-  const table = new Uint8Array(128)
-  for (let index = 0; index < characters.length; index++) {
-    table[characters.charCodeAt(index)] = 1
-  }
-  return table
 }
