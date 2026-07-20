@@ -8,6 +8,7 @@
   "version": "0.3.0",
   "type": "module",
   "sideEffects": false,
+  "types": "./dist/main.d.ts",
   "files": [
     "dist"
   ],
