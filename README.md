@@ -1,6 +1,6 @@
 # aura
 
-[![](https://badgen.net/npm/v/marked)](https://www.npmjs.com/package/@realloon/aura)
+[![](https://badgen.net/npm/v/@realloon/aura)](https://www.npmjs.com/package/@realloon/aura)
 
 A syntax-highlighting library for streaming output.
 
