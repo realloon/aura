@@ -1,19 +1,17 @@
 # aura
 
-[![](https://badgen.net/npm/v/@realloon/aura)](https://www.npmjs.com/package/@realloon/aura)
-
 A syntax-highlighting library for streaming output.
 
 ## Install
 
 ```sh
-npm install marked
+npm install @realloon/aura
 ```
 
 ## Usage
 
 ```ts
-import { Aura, csharp } from 'aura'
+import { Aura, csharp } from '@realloon/aura'
 
 const aura = new Aura().register([csharp])
 const stream = aura.createHighlighter('csharp')
@@ -36,8 +34,8 @@ lexer.finish((text, scope) => renderToken(text, scope))
 Aura can be passed to [Markflow](https://github.com/realloon/markflow) to highlight fenced code blocks while Markdown is streaming:
 
 ```ts
-import { Aura, csharp } from 'aura'
-import { MarkdownStream } from 'markflow'
+import { Aura, csharp } from '@realloon/aura'
+import { MarkdownStream } from '@realloon/markflow'
 
 const aura = new Aura().register([csharp])
 const stream = new MarkdownStream({ highlighter: aura })
