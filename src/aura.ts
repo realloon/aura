@@ -7,7 +7,7 @@ import type {
 export class Aura {
   readonly #languages = new Map<string, LanguagePlugin>()
 
-  register(plugins: readonly LanguagePlugin[]): this {
+  register(plugins: readonly LanguagePlugin[]) {
     const pending = new Map<string, LanguagePlugin>()
 
     for (const plugin of plugins) {
@@ -35,11 +35,11 @@ export class Aura {
     return this
   }
 
-  has(language: string): boolean {
+  has(language: string) {
     return this.#languages.has(normalizeName(language))
   }
 
-  createLexer(language: string): LanguageLexer {
+  createLexer(language: string) {
     const normalized = normalizeName(language)
     const plugin = this.#languages.get(normalized)
 
@@ -50,11 +50,11 @@ export class Aura {
     return plugin.createLexer()
   }
 
-  createHighlighter(language: string): StreamingHighlighter {
+  createHighlighter(language: string) {
     return new StreamingHighlighter(this.createLexer(language))
   }
 
-  highlight(code: string, language: string): string {
+  highlight(code: string, language: string) {
     const highlighter = this.createHighlighter(language)
     return highlighter.write(code) + highlighter.finish()
   }
@@ -68,7 +68,7 @@ export class StreamingHighlighter {
     this.#lexer = lexer
   }
 
-  write(chunk: string): string {
+  write(chunk: string) {
     if (this.#finished) {
       throw new Error('Cannot write after the highlighter has finished')
     }
@@ -76,7 +76,7 @@ export class StreamingHighlighter {
     return this.#render(emit => this.#lexer.write(chunk, emit))
   }
 
-  finish(): string {
+  finish() {
     if (this.#finished) {
       throw new Error('The highlighter has already finished')
     }
@@ -87,7 +87,7 @@ export class StreamingHighlighter {
 
   #render(
     tokenize: (emit: (text: string, scope?: TokenScope) => void) => void,
-  ): string {
+  ) {
     const output: string[] = []
     let pendingText = ''
     let pendingScope: TokenScope | undefined
@@ -116,13 +116,13 @@ export class StreamingHighlighter {
   }
 }
 
-function normalizeName(name: string): string {
+function normalizeName(name: string) {
   const normalized = name.trim().toLowerCase()
   if (normalized.length === 0) throw new Error('Language name cannot be empty')
   return normalized
 }
 
-function escapeHtml(text: string): string {
+function escapeHtml(text: string) {
   return text.replace(/[&<>"']/g, character => {
     switch (character) {
       case '&':

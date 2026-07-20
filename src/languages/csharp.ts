@@ -56,7 +56,7 @@ class CSharpLexer implements LanguageLexer {
   #numberAllowsSign = false
   #lineOnlyWhitespace = true
 
-  write(chunk: string, emit: TokenSink): void {
+  write(chunk: string, emit: TokenSink) {
     let input = chunk
     if (this.#carry.length > 0) {
       input = this.#carry + input
@@ -99,7 +99,7 @@ class CSharpLexer implements LanguageLexer {
     }
   }
 
-  finish(emit: TokenSink): void {
+  finish(emit: TokenSink) {
     if (this.#carry.length > 0) {
       const carry = this.#carry
       this.#carry = ''
@@ -109,7 +109,7 @@ class CSharpLexer implements LanguageLexer {
     this.#flushPendingWord(emit)
   }
 
-  #scanNormal(input: string, index: number, emit: TokenSink): number {
+  #scanNormal(input: string, index: number, emit: TokenSink) {
     if (this.#pendingWord.length > 0) {
       return this.#continuePendingWord(input, index, emit)
     }
@@ -197,7 +197,7 @@ class CSharpLexer implements LanguageLexer {
     return index + 1
   }
 
-  #scanWord(input: string, index: number, emit: TokenSink): number {
+  #scanWord(input: string, index: number, emit: TokenSink) {
     let end = index + 1
     while (end < input.length && isIdentifierPart(input.charCodeAt(end))) end++
 
@@ -218,7 +218,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #continuePendingWord(input: string, index: number, emit: TokenSink): number {
+  #continuePendingWord(input: string, index: number, emit: TokenSink) {
     let end = index
     while (end < input.length && isIdentifierPart(input.charCodeAt(end))) end++
 
@@ -238,7 +238,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #scanPlainIdentifier(input: string, index: number, emit: TokenSink): number {
+  #scanPlainIdentifier(input: string, index: number, emit: TokenSink) {
     let end = index
     while (end < input.length && isIdentifierPart(input.charCodeAt(end))) end++
     emit(input.slice(index, end))
@@ -246,7 +246,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #scanNumber(input: string, index: number, emit: TokenSink): number {
+  #scanNumber(input: string, index: number, emit: TokenSink) {
     let end = index
     while (end < input.length) {
       const code = input.charCodeAt(end)
@@ -269,7 +269,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #startSlash(input: string, index: number, emit: TokenSink): number {
+  #startSlash(input: string, index: number, emit: TokenSink) {
     if (index + 1 === input.length) {
       this.#carry = '/'
       return input.length
@@ -295,7 +295,7 @@ class CSharpLexer implements LanguageLexer {
     index: number,
     scope: 'comment' | 'meta',
     emit: TokenSink,
-  ): number {
+  ) {
     let end = index
     while (end < input.length) {
       const code = input.charCodeAt(end)
@@ -307,7 +307,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #scanBlockComment(input: string, index: number, emit: TokenSink): number {
+  #scanBlockComment(input: string, index: number, emit: TokenSink) {
     let end = index
 
     if (this.#blockCommentStar) {
@@ -339,7 +339,7 @@ class CSharpLexer implements LanguageLexer {
     prefixStart: number,
     quoteIndex: number,
     emit: TokenSink,
-  ): number {
+  ) {
     let end = quoteIndex
     while (end < input.length && input[end] === '"') end++
     const quoteCount = end - quoteIndex
@@ -366,7 +366,7 @@ class CSharpLexer implements LanguageLexer {
     return end
   }
 
-  #startAt(input: string, index: number, emit: TokenSink): number {
+  #startAt(input: string, index: number, emit: TokenSink) {
     if (index + 1 === input.length) {
       this.#carry = '@'
       return input.length
@@ -408,7 +408,7 @@ class CSharpLexer implements LanguageLexer {
     return index + 1
   }
 
-  #startDollar(input: string, index: number, emit: TokenSink): number {
+  #startDollar(input: string, index: number, emit: TokenSink) {
     let dollarsEnd = index + 1
     while (dollarsEnd < input.length && input[dollarsEnd] === '$') dollarsEnd++
 
@@ -447,12 +447,7 @@ class CSharpLexer implements LanguageLexer {
     return dollarsEnd
   }
 
-  #scanQuoted(
-    input: string,
-    index: number,
-    quote: '"' | "'",
-    emit: TokenSink,
-  ): number {
+  #scanQuoted(input: string, index: number, quote: '"' | "'", emit: TokenSink) {
     let end = index
     while (end < input.length) {
       const character = input[end]
@@ -486,7 +481,7 @@ class CSharpLexer implements LanguageLexer {
     return input.length
   }
 
-  #scanVerbatimString(input: string, index: number, emit: TokenSink): number {
+  #scanVerbatimString(input: string, index: number, emit: TokenSink) {
     if (this.#verbatimQuote) {
       this.#verbatimQuote = false
       if (input[index] !== '"') {
@@ -526,7 +521,7 @@ class CSharpLexer implements LanguageLexer {
     return input.length
   }
 
-  #scanRawString(input: string, index: number, emit: TokenSink): number {
+  #scanRawString(input: string, index: number, emit: TokenSink) {
     let end = index
     while (end < input.length) {
       if (input[end] === '"') {
@@ -548,7 +543,7 @@ class CSharpLexer implements LanguageLexer {
     return input.length
   }
 
-  #finishCarry(carry: string, emit: TokenSink): void {
+  #finishCarry(carry: string, emit: TokenSink) {
     if (carry === '/' || carry === '$' || carry === '.') {
       emit(carry, 'operator')
       return
@@ -571,13 +566,13 @@ class CSharpLexer implements LanguageLexer {
     emit(carry, 'string')
   }
 
-  #flushPendingWord(emit: TokenSink): void {
+  #flushPendingWord(emit: TokenSink) {
     if (this.#pendingWord.length === 0) return
     emit(this.#pendingWord, wordScope(this.#pendingWord))
     this.#pendingWord = ''
   }
 
-  #noteWhitespace(text: string): void {
+  #noteWhitespace(text: string) {
     const lastNewline = Math.max(text.lastIndexOf('\n'), text.lastIndexOf('\r'))
     if (lastNewline !== -1) this.#lineOnlyWhitespace = true
   }
@@ -590,7 +585,7 @@ function wordScope(word: string): TokenScope | undefined {
   return undefined
 }
 
-function isIdentifierStart(code: number): boolean {
+function isIdentifierStart(code: number) {
   return (
     code === 95 ||
     (code >= 65 && code <= 90) ||
@@ -599,19 +594,19 @@ function isIdentifierStart(code: number): boolean {
   )
 }
 
-function isIdentifierPart(code: number): boolean {
+function isIdentifierPart(code: number) {
   return isIdentifierStart(code) || isDigit(code)
 }
 
-function isDigit(code: number): boolean {
+function isDigit(code: number) {
   return code >= 48 && code <= 57
 }
 
-function isWhitespace(code: number): boolean {
+function isWhitespace(code: number) {
   return code === 9 || code === 10 || code === 13 || code === 32
 }
 
-function isNumberPart(code: number): boolean {
+function isNumberPart(code: number) {
   const lower = code | 32
   return (
     isDigit(code) ||
@@ -625,19 +620,19 @@ function isNumberPart(code: number): boolean {
   )
 }
 
-function isPunctuation(code: number): boolean {
+function isPunctuation(code: number) {
   return PUNCTUATION[code] === 1
 }
 
-function isOperator(code: number): boolean {
+function isOperator(code: number) {
   return OPERATORS[code] === 1
 }
 
-function wordSet(words: string): Set<string> {
+function wordSet(words: string) {
   return new Set(words.trim().split(/\s+/))
 }
 
-function asciiTable(characters: string): Uint8Array {
+function asciiTable(characters: string) {
   const table = new Uint8Array(128)
   for (let index = 0; index < characters.length; index++) {
     table[characters.charCodeAt(index)] = 1
