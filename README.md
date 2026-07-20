@@ -30,3 +30,15 @@ const lexer = aura.createLexer('cs')
 lexer.write(chunk, (text, scope) => renderToken(text, scope))
 lexer.finish((text, scope) => renderToken(text, scope))
 ```
+
+## Use with Markflow
+
+Aura can be passed to [Markflow](https://github.com/realloon/markflow) to highlight fenced code blocks while Markdown is streaming:
+
+```ts
+import { Aura, csharp } from 'aura'
+import { MarkdownStream } from 'markflow'
+
+const aura = new Aura().register([csharp])
+const stream = new MarkdownStream({ highlighter: aura })
+```
