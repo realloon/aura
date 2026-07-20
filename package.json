@@ -1,5 +1,5 @@
 {
-  "name": "@vortex/aura",
+  "name": "@realloon/aura",
   "description": "A syntax-highlighting library for streaming output.",
   "publishConfig": {
     "access": "public"
