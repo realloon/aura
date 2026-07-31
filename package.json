@@ -1,6 +1,6 @@
 {
   "name": "@realloon/aura",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "A syntax-highlighting library for streaming output.",
   "license": "MIT",
   "keywords": [
@@ -12,16 +12,12 @@
   },
   "type": "module",
   "sideEffects": false,
-  "types": "./dist/main.d.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
   "files": [
-    "dist"
+    "index.ts",
+    "src"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/main.d.ts",
-      "import": "./dist/main.js"
-    }
-  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "bun test",

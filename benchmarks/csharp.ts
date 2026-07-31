@@ -1,4 +1,4 @@
-import { Aura, csharp } from '../src/main'
+import { Aura, csharp } from '../index.ts'
 
 const sample = `
 public sealed class MessageService

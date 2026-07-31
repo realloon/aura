@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { Aura, csharp, xml } from '../src/main'
-import type { TokenScope } from '../src/main'
+import { Aura, csharp, xml } from '../index.ts'
+import type { TokenScope } from '../index.ts'
 
 interface Segment {
   text: string
