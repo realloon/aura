@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "moduleResolution": "bundler",
+    "rootDir": ".",
+    "outDir": "dist",
+    "declaration": true,
     "skipLibCheck": true,
-    "noEmit": true
   },
   "include": ["index.ts", "src"]
 }
