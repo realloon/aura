@@ -93,7 +93,7 @@ class XmlLexer implements LanguageLexer {
   }
 
   #scanText(input: string, index: number, emit: TokenSink) {
-    const character = input[index]
+    const character = input[index]!
     if (character === '<') return this.#startMarkup(input, index, emit)
     if (character === '&') {
       this.#mode = Mode.Entity
@@ -160,7 +160,7 @@ class XmlLexer implements LanguageLexer {
 
   #scanTag(input: string, index: number, emit: TokenSink) {
     const code = input.charCodeAt(index)
-    const character = input[index]
+    const character = input[index]!
 
     if (isWhitespace(code)) {
       const end = scanWhitespace(input, index)

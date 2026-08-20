@@ -67,7 +67,7 @@ class JsonLexer implements LanguageLexer {
 
   #scanNormal(input: string, index: number, emit: TokenSink) {
     const code = input.charCodeAt(index)
-    const character = input[index]
+    const character = input[index]!
 
     if (isWhitespace(code)) {
       const end = scanWhitespace(input, index)

@@ -143,7 +143,7 @@ class CSharpLexer implements LanguageLexer {
       return end
     }
 
-    const character = input[index]
+    const character = input[index]!
     switch (character) {
       case '/':
         return this.#startSlash(input, index, emit)

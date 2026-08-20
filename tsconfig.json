@@ -5,6 +5,7 @@
     "outDir": "dist",
     "declaration": true,
     "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["index.ts", "src"]
 }
