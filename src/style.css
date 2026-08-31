@@ -1,0 +1,34 @@
+::highlight(aura-keyword) {
+  color: light-dark(#cf222e, #ff7b72);
+}
+
+::highlight(aura-tag) {
+  color: light-dark(#116329, #7ee787);
+}
+
+::highlight(aura-attribute),
+::highlight(aura-operator) {
+  color: light-dark(#953800, #ffa657);
+}
+
+::highlight(aura-type),
+::highlight(aura-number),
+::highlight(aura-literal) {
+  color: light-dark(#0550ae, #79c0ff);
+}
+
+::highlight(aura-string) {
+  color: light-dark(#0a3069, #a5d6ff);
+}
+
+::highlight(aura-comment) {
+  color: light-dark(#6e7781, #8b949e);
+}
+
+::highlight(aura-meta) {
+  color: light-dark(#8250df, #d2a8ff);
+}
+
+::highlight(aura-punctuation) {
+  color: light-dark(#57606a, #8b949e);
+}

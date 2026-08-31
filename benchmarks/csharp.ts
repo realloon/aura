@@ -15,19 +15,22 @@ public sealed class MessageService
 const source = sample.repeat(2_000)
 const aura = new Aura().register([csharp])
 const iterations = 20
+const discard = () => {}
 
 for (let warmup = 0; warmup < 5; warmup++) {
-  aura.highlight(source, 'csharp')
+  const lexer = aura.createLexer('csharp')
+  lexer.write(source, discard)
+  lexer.end(discard)
 }
 
 const start = performance.now()
 
 for (let iteration = 0; iteration < iterations; iteration++) {
-  const stream = aura.createHighlighter('csharp')
+  const lexer = aura.createLexer('csharp')
   for (let offset = 0; offset < source.length; offset += 32) {
-    stream.write(source.slice(offset, offset + 32))
+    lexer.write(source.slice(offset, offset + 32), discard)
   }
-  stream.end()
+  lexer.end(discard)
 }
 
 const seconds = (performance.now() - start) / 1_000

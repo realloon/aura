@@ -11,7 +11,10 @@
     "access": "public"
   },
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/style.css"
+  ],
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,14 +22,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
   "files": [
     "dist",
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "rm -rf dist && tsc -p tsconfig.json && cp src/style.css dist/style.css",
     "prepack": "bun run build",
     "benchmark": "bun run benchmarks/csharp.ts"
   },

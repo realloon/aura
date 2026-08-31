@@ -1,8 +1,37 @@
 import type {
+  HighlightBinding,
   LanguageLexer,
   LanguagePlugin,
   TokenScope,
 } from './types/index.js'
+
+interface HighlightLike {
+  add(range: Range): unknown
+  delete(range: Range): boolean
+  readonly size: number
+}
+
+interface HighlightRegistryLike {
+  delete(name: string): boolean
+  get(name: string): HighlightLike | undefined
+  set(name: string, highlight: HighlightLike): unknown
+}
+
+interface HighlightWindow extends Window {
+  CSS?: { highlights?: HighlightRegistryLike }
+  Highlight?: new () => HighlightLike
+}
+
+interface HighlightContext {
+  document: Document
+  registry: HighlightRegistryLike
+  highlights: Map<string, HighlightLike>
+}
+
+const highlightsByDocument = new WeakMap<
+  Document,
+  Map<string, HighlightLike>
+>()
 
 export class Aura {
   readonly #languages = new Map<string, LanguagePlugin>()
@@ -50,69 +79,112 @@ export class Aura {
     return plugin.createLexer()
   }
 
-  createHighlighter(language: string) {
-    return new StreamingHighlighter(this.createLexer(language))
-  }
+  highlight(code: Element, language: string): HighlightBinding {
+    if (code.childNodes.length !== 0) {
+      throw new Error('Aura can only highlight an empty element')
+    }
 
-  highlight(code: string, language: string) {
-    const highlighter = this.createHighlighter(language)
-    return highlighter.write(code) + highlighter.end()
+    const lexer = this.createLexer(language)
+    const context = getHighlightContext(code.ownerDocument)
+    const text = code.ownerDocument.createTextNode('')
+    code.append(text)
+    return new BoundHighlighter(lexer, text, context)
   }
 }
 
-export class StreamingHighlighter {
+class BoundHighlighter implements HighlightBinding {
   readonly #lexer: LanguageLexer
+  readonly #text: Text
+  readonly #context: HighlightContext
+  readonly #ranges: Array<{
+    highlight: HighlightLike
+    name: string
+    range: Range
+  }> = []
+  #emitted = 0
   #ended = false
+  #disposed = false
 
-  constructor(lexer: LanguageLexer) {
+  constructor(
+    lexer: LanguageLexer,
+    text: Text,
+    context: HighlightContext,
+  ) {
     this.#lexer = lexer
+    this.#text = text
+    this.#context = context
   }
 
   write(chunk: string) {
-    if (this.#ended) {
-      throw new Error('Cannot write after the highlighter has ended')
-    }
+    this.#assertWritable()
+    if (chunk.length === 0) return
 
-    return this.#render(emit => this.#lexer.write(chunk, emit))
+    this.#text.appendData(chunk)
+    this.#lexer.write(chunk, this.#emit)
   }
 
   end() {
-    if (this.#ended) {
-      throw new Error('The highlighter has already ended')
-    }
-
+    this.#assertWritable()
     this.#ended = true
-    return this.#render(emit => this.#lexer.end(emit))
+    this.#lexer.end(this.#emit)
+
+    if (this.#emitted !== this.#text.length) {
+      throw new Error('Language lexer did not emit all bound source text')
+    }
   }
 
-  #render(
-    tokenize: (emit: (text: string, scope?: TokenScope) => void) => void,
-  ) {
-    const output: string[] = []
-    let pendingText = ''
-    let pendingScope: TokenScope | undefined
+  dispose() {
+    if (this.#disposed) return
+    this.#disposed = true
 
-    const flush = () => {
-      if (pendingText.length === 0) return
+    for (const { highlight, name, range } of this.#ranges) {
+      highlight.delete(range)
+      if (highlight.size === 0) {
+        this.#context.highlights.delete(name)
+        if (this.#context.registry.get(name) === highlight) {
+          this.#context.registry.delete(name)
+        }
+      }
+    }
+    this.#ranges.length = 0
+  }
 
-      const escaped = escapeHtml(pendingText)
-      output.push(
-        pendingScope
-          ? `<span class="aura-${pendingScope}">${escaped}</span>`
-          : escaped,
-      )
-      pendingText = ''
+  readonly #emit = (value: string, scope?: TokenScope) => {
+    if (value.length === 0) return
+
+    const start = this.#emitted
+    const end = start + value.length
+    if (this.#text.data.slice(start, end) !== value) {
+      throw new Error('Language lexer emitted text out of source order')
+    }
+    this.#emitted = end
+
+    if (!scope) return
+
+    const name = `aura-${scope}`
+    let highlight = this.#context.highlights.get(name)
+    if (!highlight) {
+      const Highlight = getHighlightConstructor(this.#context.document)
+      const created = new Highlight()
+      this.#context.highlights.set(name, created)
+      this.#context.registry.set(name, created)
+      highlight = created
     }
 
-    tokenize((text, scope) => {
-      if (text.length === 0) return
-      if (pendingText.length > 0 && pendingScope !== scope) flush()
-      pendingScope = scope
-      pendingText += text
-    })
+    const range = this.#context.document.createRange()
+    range.setStart(this.#text, start)
+    range.setEnd(this.#text, end)
+    highlight.add(range)
+    this.#ranges.push({ highlight, name, range })
+  }
 
-    flush()
-    return output.join('')
+  #assertWritable() {
+    if (this.#disposed) {
+      throw new Error('Cannot write after the highlighter has been disposed')
+    }
+    if (this.#ended) {
+      throw new Error('Cannot write after the highlighter has ended')
+    }
   }
 }
 
@@ -122,19 +194,25 @@ function normalizeName(name: string) {
   return normalized
 }
 
-function escapeHtml(text: string) {
-  return text.replace(/[&<>"']/g, character => {
-    switch (character) {
-      case '&':
-        return '&amp;'
-      case '<':
-        return '&lt;'
-      case '>':
-        return '&gt;'
-      case '"':
-        return '&quot;'
-      default:
-        return '&#39;'
-    }
-  })
+function getHighlightContext(document: Document): HighlightContext {
+  const view = document.defaultView as HighlightWindow | null
+  const registry = view?.CSS?.highlights
+  if (!registry || !view?.Highlight) {
+    throw new Error('CSS Custom Highlight API is not available in this document')
+  }
+
+  let highlights = highlightsByDocument.get(document)
+  if (!highlights) {
+    highlights = new Map()
+    highlightsByDocument.set(document, highlights)
+  }
+  return { document, registry, highlights }
+}
+
+function getHighlightConstructor(document: Document) {
+  const view = document.defaultView as HighlightWindow | null
+  if (!view?.Highlight) {
+    throw new Error('CSS Custom Highlight API is not available in this document')
+  }
+  return view.Highlight
 }

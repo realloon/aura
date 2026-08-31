@@ -14,6 +14,13 @@ export type TokenScope =
 
 export type TokenSink = (text: string, scope?: TokenScope) => void
 
+/** A syntax highlighter bound to one DOM element. */
+export interface HighlightBinding {
+  write(chunk: string): void
+  end(): void
+  dispose(): void
+}
+
 export interface LanguageLexer {
   write(chunk: string, emit: TokenSink): void
   end(emit: TokenSink): void

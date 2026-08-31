@@ -1,6 +1,58 @@
 import { describe, expect, test } from 'bun:test'
 import { Aura, csharp } from '../index.ts'
 
+class FakeRange {
+  endOffset = 0
+  startOffset = 0
+
+  setEnd(_node: Node, offset: number) {
+    this.endOffset = offset
+  }
+
+  setStart(_node: Node, offset: number) {
+    this.startOffset = offset
+  }
+}
+
+class FakeText {
+  data = ''
+
+  get length() {
+    return this.data.length
+  }
+
+  appendData(value: string) {
+    this.data += value
+  }
+}
+
+class FakeHighlight extends Set<FakeRange> {}
+
+class FakeDocument {
+  readonly defaultView = {
+    CSS: { highlights: new Map<string, FakeHighlight>() },
+    Highlight: FakeHighlight,
+  }
+
+  createRange() {
+    return new FakeRange()
+  }
+
+  createTextNode() {
+    return new FakeText()
+  }
+}
+
+class FakeCode {
+  readonly childNodes: FakeText[] = []
+
+  constructor(readonly ownerDocument: FakeDocument) {}
+
+  append(text: FakeText) {
+    this.childNodes.push(text)
+  }
+}
+
 describe('Aura', () => {
   test('registers aliases and rejects unknown languages', () => {
     const aura = new Aura().register([csharp])
@@ -27,19 +79,45 @@ describe('Aura', () => {
     expect(aura.has('custom')).toBe(false)
   })
 
-  test('renders escaped HTML', () => {
+  test('highlights ranges on one stable text node and releases only its own ranges', () => {
+    const document = new FakeDocument()
     const aura = new Aura().register([csharp])
-    expect(aura.highlight('string text = "<tag>";', 'csharp')).toBe(
-      '<span class="aura-type">string</span> text <span class="aura-operator">=</span> <span class="aura-string">&quot;&lt;tag&gt;&quot;</span><span class="aura-punctuation">;</span>',
-    )
-  })
+    const firstCode = new FakeCode(document)
+    const first = aura.highlight(firstCode as unknown as Element, 'csharp')
+    const firstText = firstCode.childNodes[0]!
 
-  test('enforces the streaming lifecycle', () => {
-    const stream = new Aura().register([csharp]).createHighlighter('cs')
-    stream.end()
-    expect(() => stream.write('public')).toThrow(
+    first.write('pub')
+    expect(firstText.data).toBe('pub')
+    expect(document.defaultView.CSS.highlights.size).toBe(0)
+
+    first.write('lic ')
+    first.write('string ')
+    first.end()
+    expect(() => first.write('public')).toThrow(
       'Cannot write after the highlighter has ended',
     )
-    expect(() => stream.end()).toThrow('The highlighter has already ended')
+    expect(() => first.end()).toThrow(
+      'Cannot write after the highlighter has ended',
+    )
+
+    expect(firstCode.childNodes).toEqual([firstText])
+    expect(firstText.data).toBe('public string ')
+    const keyword = document.defaultView.CSS.highlights.get('aura-keyword')!
+    const keywordRange = [...keyword][0]!
+    expect(keywordRange.startOffset).toBe(0)
+    expect(keywordRange.endOffset).toBe(6)
+
+    const secondCode = new FakeCode(document)
+    const second = aura.highlight(secondCode as unknown as Element, 'csharp')
+    second.write('public ')
+    second.end()
+    expect(keyword.size).toBe(2)
+
+    first.dispose()
+    expect(keyword.size).toBe(1)
+    expect(document.defaultView.CSS.highlights.has('aura-keyword')).toBe(true)
+
+    second.dispose()
+    expect(document.defaultView.CSS.highlights.has('aura-keyword')).toBe(false)
   })
 })
