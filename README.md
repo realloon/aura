@@ -11,7 +11,7 @@ npm install @realloon/aura
 ## Usage
 
 ```ts
-import '@realloon/aura/style.css'
+import '@realloon/aura/highlight.css'
 import { Aura, csharp } from '@realloon/aura'
 
 const aura = new Aura().register([csharp])

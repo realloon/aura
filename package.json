@@ -12,7 +12,7 @@
   },
   "type": "module",
   "sideEffects": [
-    "./dist/style.css"
+    "./dist/highlight.css"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -23,14 +23,14 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./style.css": "./dist/style.css"
+    "./highlight.css": "./dist/highlight.css"
   },
   "files": [
     "dist",
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json && cp src/style.css dist/style.css",
+    "build": "rm -rf dist && tsc -p tsconfig.json && cp src/highlight.css dist/highlight.css",
     "prepack": "bun run build",
     "benchmark": "bun run benchmarks/csharp.ts"
   },
