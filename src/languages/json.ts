@@ -4,6 +4,7 @@ import type {
   TokenSink,
 } from '../types/index.js'
 import {
+  createAsciiTable,
   createWordSet,
   isAsciiDigit,
   isAsciiLetter,
@@ -20,6 +21,7 @@ const enum Mode {
 }
 
 const LITERALS = createWordSet('false null true')
+const PUNCTUATION = createAsciiTable('{}[],:')
 const MAX_LITERAL_LENGTH = Math.max(...[...LITERALS].map(word => word.length))
 
 export const json: LanguagePlugin = {
@@ -93,7 +95,7 @@ class JsonLexer implements LanguageLexer {
       return this.#scanLiteral(input, index, emit)
     }
 
-    if ('{}[],:'.includes(character)) {
+    if (PUNCTUATION[code] === 1) {
       emit(character, 'punctuation')
       return index + 1
     }
