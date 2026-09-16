@@ -24,14 +24,12 @@ interface HighlightWindow extends Window {
 
 interface HighlightContext {
   document: Document
+  Highlight: new () => HighlightLike
   registry: HighlightRegistryLike
   highlights: Map<string, HighlightLike>
 }
 
-const highlightsByDocument = new WeakMap<
-  Document,
-  Map<string, HighlightLike>
->()
+const highlightsByDocument = new WeakMap<Document, Map<string, HighlightLike>>()
 
 export class Aura {
   readonly #languages = new Map<string, LanguagePlugin>()
@@ -105,11 +103,7 @@ class BoundHighlighter implements HighlightBinding {
   #ended = false
   #disposed = false
 
-  constructor(
-    lexer: LanguageLexer,
-    text: Text,
-    context: HighlightContext,
-  ) {
+  constructor(lexer: LanguageLexer, text: Text, context: HighlightContext) {
     this.#lexer = lexer
     this.#text = text
     this.#context = context
@@ -164,8 +158,7 @@ class BoundHighlighter implements HighlightBinding {
     const name = `aura-${scope}`
     let highlight = this.#context.highlights.get(name)
     if (!highlight) {
-      const Highlight = getHighlightConstructor(this.#context.document)
-      const created = new Highlight()
+      const created = new this.#context.Highlight()
       this.#context.highlights.set(name, created)
       this.#context.registry.set(name, created)
       highlight = created
@@ -198,7 +191,9 @@ function getHighlightContext(document: Document): HighlightContext {
   const view = document.defaultView as HighlightWindow | null
   const registry = view?.CSS?.highlights
   if (!registry || !view?.Highlight) {
-    throw new Error('CSS Custom Highlight API is not available in this document')
+    throw new Error(
+      'CSS Custom Highlight API is not available in this document',
+    )
   }
 
   let highlights = highlightsByDocument.get(document)
@@ -206,13 +201,5 @@ function getHighlightContext(document: Document): HighlightContext {
     highlights = new Map()
     highlightsByDocument.set(document, highlights)
   }
-  return { document, registry, highlights }
-}
-
-function getHighlightConstructor(document: Document) {
-  const view = document.defaultView as HighlightWindow | null
-  if (!view?.Highlight) {
-    throw new Error('CSS Custom Highlight API is not available in this document')
-  }
-  return view.Highlight
+  return { document, Highlight: view.Highlight, registry, highlights }
 }
